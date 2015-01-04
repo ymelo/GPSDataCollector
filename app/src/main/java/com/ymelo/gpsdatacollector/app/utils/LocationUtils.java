@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.ymelo.gpsdatacollector.app;
+package com.ymelo.gpsdatacollector.app.utils;
 
 import android.content.Context;
 import android.location.Location;
+import com.ymelo.gpsdatacollector.app.R;
 
 /**
  * Defines app-wide constants and utilities
@@ -74,7 +75,7 @@ public final class LocationUtils {
      */
     public static String getLatLng(Context context, Location currentLocation) {
         // If the location is valid
-        if (currentLocation != null) {
+        if (context != null && currentLocation != null) {
 
             // Return the latitude and longitude as strings
             return context.getString(

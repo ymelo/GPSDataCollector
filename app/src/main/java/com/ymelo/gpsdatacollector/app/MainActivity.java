@@ -1,15 +1,13 @@
 package com.ymelo.gpsdatacollector.app;
 
-import android.app.ActionBar;
+import android.app.*;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 
 
-public class MainActivity extends FragmentActivity
+public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     /**
@@ -40,9 +38,36 @@ public class MainActivity extends FragmentActivity
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentManager fragmentManager = getFragmentManager();
+        Fragment fr = null;
+        String tag = null;
+        switch (position) {
+            case 1:
+                tag = RecordFragment.TAG;
+                fr = getFragmentManager().findFragmentByTag(tag);
+                if(fr == null) {
+                    fr = new RecordFragment();
+                }
+                break;
+            case 2:
+                tag = TripListFragment.TAG;
+                fr = getFragmentManager().findFragmentByTag(tag);
+                if(fr == null) {
+                    fr = new TripListFragment();
+                }
+                break;
+            default:
+                tag = MapFragment.TAG;
+                fr = getFragmentManager().findFragmentByTag(tag);
+                if(fr == null) {
+                    fr = MapFragment.newInstance(position + 1);
+                }
+
+                break;
+        }
+        tag = null;
         fragmentManager.beginTransaction()
-                .replace(R.id.container, MapFragment.newInstance(position + 1))
+                .replace(R.id.container, fr, tag)
                 .commit();
     }
 
