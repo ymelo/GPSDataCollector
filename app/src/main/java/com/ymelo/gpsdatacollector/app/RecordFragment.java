@@ -2,8 +2,6 @@ package com.ymelo.gpsdatacollector.app;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -12,6 +10,8 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.*;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,9 +27,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.ymelo.gpsdatacollector.app.utils.FileUtils;
 import com.ymelo.gpsdatacollector.app.utils.LocationUtils;
 
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -37,7 +35,7 @@ import java.util.Locale;
 /**
  * Created by yohann on 04/01/15.
  */
-public class RecordFragment extends Fragment  implements LocationListener,
+public class RecordFragment extends Fragment implements LocationListener,
         GooglePlayServicesClient.ConnectionCallbacks,
         GooglePlayServicesClient.OnConnectionFailedListener{
     private static final int RECORDING_BLINK_LEVEL_OFF 	= 0;

@@ -1,11 +1,9 @@
 package com.ymelo.gpsdatacollector.app;
 
-import android.app.Fragment;
-import android.app.ListFragment;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -24,12 +22,12 @@ public class TripListFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
     }
-//
-//    @Override
-//    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-//        View view = inflater.inflate(R.layout.trip_list_fragment, container, false);
-//        return view;
-//    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume");
+    }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -49,10 +47,6 @@ public class TripListFragment extends ListFragment {
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        try {
-            Toast.makeText(getActivity(), FileUtils.getFileContent(getActivity(), (String) getListAdapter().getItem(position)), Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ((MainActivity) getActivity()).replaceMap((String) getListAdapter().getItem(position));
     }
 }
