@@ -2,12 +2,15 @@ package com.ymelo.gpsdatacollector.app;
 
 import android.app.*;
 import android.os.Bundle;
+import android.support.v4.app.*;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 
 
-public class MainActivity extends Activity
+public class MainActivity extends FragmentActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     /**
@@ -38,51 +41,46 @@ public class MainActivity extends Activity
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
-        FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment fr = null;
         String tag = null;
         switch (position) {
             case 1:
                 tag = RecordFragment.TAG;
-                fr = getFragmentManager().findFragmentByTag(tag);
+                fr = getSupportFragmentManager().findFragmentByTag(tag);
                 if(fr == null) {
                     fr = new RecordFragment();
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.container, fr, tag)
+                            .commit();
                 }
+
                 break;
-            case 2:
+            case 0:
                 tag = TripListFragment.TAG;
-                fr = getFragmentManager().findFragmentByTag(tag);
+                fr = getSupportFragmentManager().findFragmentByTag(tag);
                 if(fr == null) {
                     fr = new TripListFragment();
-                }
-                break;
-            default:
-                tag = MapFragment.TAG;
-                fr = getFragmentManager().findFragmentByTag(tag);
-                if(fr == null) {
-                    fr = MapFragment.newInstance(position + 1);
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.container, fr, tag)
+                            .commit();
                 }
 
                 break;
+//            default:
+//                tag = MapFragment.TAG;
+//                fr = getFragmentManager().findFragmentByTag(tag);
+//                if(fr == null) {
+//                    fr = MapFragment.newInstance("" + position + 1);
+//                }
+//
+//                break;
         }
-        tag = null;
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, fr, tag)
-                .commit();
+
     }
 
-    public void onSectionAttached(int number) {
-        switch (number) {
-            case 1:
-                mTitle = getString(R.string.title_section1);
-                break;
-            case 2:
-                mTitle = getString(R.string.title_section2);
-                break;
-            case 3:
-                mTitle = getString(R.string.title_section3);
-                break;
-        }
+    public void onSectionAttached(String title) {
+        mTitle = title;
     }
 
     public void restoreActionBar() {
@@ -119,6 +117,19 @@ public class MainActivity extends Activity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void replaceMap(String dataFilename) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        MapFragment fragment;
+        fragment = (MapFragment) fragmentManager.findFragmentByTag(MapFragment.TAG);
+        if(fragment == null) {
+            fragment = MapFragment.newInstance(dataFilename);
+        }
+        fragmentManager.beginTransaction()
+                .add(R.id.container, fragment, MapFragment.TAG)
+                .addToBackStack(null)
+                .commit();
     }
 
 }
