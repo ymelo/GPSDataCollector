@@ -6,11 +6,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 import com.ymelo.gpsdatacollector.app.utils.FileUtils;
-
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Created by yohann on 04/01/15.

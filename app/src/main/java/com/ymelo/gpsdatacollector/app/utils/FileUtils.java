@@ -36,7 +36,15 @@ public class FileUtils {
     }
 
     public static File[] getFileList(Context context) {
-        return context.getFilesDir().listFiles();
+        return context.getFilesDir().listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                if(filename.contains("gps_")) {
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     public static void copyFile(String inputPath, String inputFile, String outputPath) {

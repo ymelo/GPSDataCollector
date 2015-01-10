@@ -14,10 +14,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.ymelo.gpsdatacollector.app.utils.FileUtils;
 
@@ -33,7 +35,7 @@ import java.util.List;
  */
 public class MapFragment extends Fragment {
     public static final String TAG = "MapFragment";
-    private GoogleMap map;
+    private GoogleMap mMap;
     private String dataFilename;
 
     /**
@@ -84,11 +86,26 @@ public class MapFragment extends Fragment {
         setUpMapIfNeeded(mapFragment);
         // Polylines are useful for marking paths and routes on the map.
         try {
+            final List<LatLng> mapData = getMapData();
             PolylineOptions po = new PolylineOptions();
             po.color(getResources().getColor(R.color.polylineColor));
             po.width(3.0f);
-            po.geodesic(true).addAll(getMapData());
-            map.addPolyline(po);
+            po.geodesic(true).addAll(mapData);
+            mMap.addPolyline(po);
+            mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+                @Override
+                public void onMapLoaded() {
+                    LatLngBounds.Builder b = new LatLngBounds.Builder();
+                    for (LatLng point : mapData) {
+                        b.include(point);
+                    }
+                    LatLngBounds bounds = b.build();
+                    //Change the padding as per needed
+                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 30);
+                    mMap.animateCamera(cu);
+                }
+            });
+
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -116,19 +133,28 @@ public class MapFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        ((MainActivity) activity).onSectionAttached("map");
+        ((MainActivity) activity).onSectionAttached("test p");
     }
 
     public List<LatLng> getMapData() throws IOException {
         if(Config.FAKE_DATA_ON_MAP) {
             ArrayList<LatLng> list = new ArrayList<LatLng>(10);
-            //TODO: To be implemented
+            double lat = Config.LAT;
+            double lng = Config.LNG;
+            for(int i = 0; i < 10 ; i++) {
+                lat += 0.00200170d;
+                lng += 0.00200170d;
+                LatLng loc = new LatLng(lat, lng);
+                list.add(loc);
+            }
             return list;
 
         } else {
             return getMessages();
         }
     }
+
+
 
     public List<LatLng> getMessages() throws IOException {
         if(dataFilename == null) {
@@ -166,42 +192,47 @@ public class MapFragment extends Fragment {
 
     void mapSetup() {
         if(getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH)) {
-            map.getUiSettings().setZoomControlsEnabled(false);
+            mMap.getUiSettings().setZoomControlsEnabled(false);
         } else {
-            map.getUiSettings().setZoomControlsEnabled(true);
+            mMap.getUiSettings().setZoomControlsEnabled(true);
         }
         LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
         Location lastNetworkLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1){
-            Location lastGPSLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if(lastGPSLocation.getElapsedRealtimeNanos() > lastNetworkLocation.getElapsedRealtimeNanos()) {
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                        new LatLng(lastNetworkLocation.getLatitude(), lastNetworkLocation.getLongitude()), 14));
+        if(lastNetworkLocation != null) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1){
+                Location lastGPSLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if(lastGPSLocation != null) {
+                    if(lastGPSLocation.getElapsedRealtimeNanos() > lastNetworkLocation.getElapsedRealtimeNanos()) {
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                new LatLng(lastNetworkLocation.getLatitude(), lastNetworkLocation.getLongitude()), 14));
+                    } else {
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                new LatLng(lastGPSLocation.getLatitude(), lastGPSLocation.getLongitude()), 14));
+                    }
+                } else {
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(lastNetworkLocation.getLatitude(), lastNetworkLocation.getLongitude()), 14));
+                }
             } else {
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                        new LatLng(lastGPSLocation.getLatitude(), lastGPSLocation.getLongitude()), 14));
+                //No simple way to compare the two different location time
+                //So go for the assumption that the network location should be used
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(lastNetworkLocation.getLatitude(), lastNetworkLocation.getLongitude()), 14));
             }
-        } else {
-            //No simple way to compare the two different location time
-            //So go for the assumption that the network location should be used
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(lastNetworkLocation.getLatitude(), lastNetworkLocation.getLongitude()), 14));
         }
-
-
     }
     private void setUpMapIfNeeded(SupportMapFragment mapFragment) {
 
         // Do a null check to confirm that we have not already instantiated the map.
-        if (map == null) {
+        if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
 //            map = ((com.google.android.gms.maps.SupportMapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
-            map = mapFragment.getMap();
+            mMap = mapFragment.getMap();
             // Check if we were successful in obtaining the map.
-            if (map != null) {
-                map.setMyLocationEnabled(true);
+            if (mMap != null) {
+                mMap.setMyLocationEnabled(true);
 //            	map.setOnMyLocationButtonClickListener(this);
                 mapSetup();
             }
