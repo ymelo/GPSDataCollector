@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
@@ -25,6 +26,7 @@ import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.ymelo.gpsdatacollector.app.utils.FileUtils;
+import com.ymelo.gpsdatacollector.app.utils.FragmentFix;
 import com.ymelo.gpsdatacollector.app.utils.LocationUtils;
 
 import java.io.FileOutputStream;
@@ -35,13 +37,15 @@ import java.util.Locale;
 /**
  * Created by yohann on 04/01/15.
  */
-public class RecordFragment extends Fragment implements LocationListener,
+public class RecordFragment extends FragmentFix implements LocationListener,
         GooglePlayServicesClient.ConnectionCallbacks,
         GooglePlayServicesClient.OnConnectionFailedListener{
     private static final int RECORDING_BLINK_LEVEL_OFF 	= 0;
     private static final int RECORDING_BLINK_LEVEL_ON 	= 1;
     protected static final long DELAY_RECORDING_BLINK 	= 1000;
     public static final String TAG = "RecordFragment";
+
+    private boolean mIsRecording = false;
 
     // A request to connect to Location Services
     private LocationRequest mLocationRequest;
@@ -63,6 +67,7 @@ public class RecordFragment extends Fragment implements LocationListener,
     boolean mUpdatesRequested = false;
 
     private ImageView mRecording;
+    private Button mStartStopRecording;
 
     Runnable mRecordingBlinkOn, mRecordingBlinkOff;
 
@@ -72,9 +77,23 @@ public class RecordFragment extends Fragment implements LocationListener,
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-//        View rootView = inflater.inflate(R.layout.fragment_map, container, false);
-//        mRecording = (ImageView) rootView.findViewById(R.id.main_img_recording);
-        return super.onCreateView(inflater, container, savedInstanceState);
+        View rootView = inflater.inflate(R.layout.fragment_record, container, false);
+        mRecording = (ImageView) rootView.findViewById(R.id.record_img_recording);
+        mStartStopRecording = (Button) rootView.findViewById(R.id.record_btn_start_stop);
+        mStartStopRecording.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mIsRecording = !mIsRecording;
+                if(mIsRecording) {
+                    mStartStopRecording.setText(getString(R.string.stop_recording));
+                    mRecording.setVisibility(View.VISIBLE);
+                } else {
+                    mStartStopRecording.setText(getString(R.string.start_recording));
+                    mRecording.setVisibility(View.GONE);
+                }
+            }
+        });
+        return rootView;
     }
     /*
      * Initialize the Activity
@@ -371,7 +390,7 @@ public class RecordFragment extends Fragment implements LocationListener,
      */
     @Override
     public void onConnected(Bundle bundle) {
-        startUpdates(null);
+//        startUpdates(null);
 //        if (mUpdatesRequested) {
 //            startPeriodicUpdates();
 //        }
@@ -433,11 +452,15 @@ public class RecordFragment extends Fragment implements LocationListener,
 
         String coords = LocationUtils.getLatLng(getActivity(), location);
         try {
-            FileOutputStream out = FileUtils.getFileWriter(getActivity().getApplicationContext(), mFileName);
-            out.write(coords.getBytes());
-            out.write("\n".getBytes());
-            out.close();
-            Log.d(TAG, coords);
+            Activity activity = getActivity();
+            if(activity != null) {
+                //TODO: do on another thread
+                FileOutputStream out = FileUtils.getFileWriter(getActivity().getApplicationContext(), mFileName);
+                out.write(coords.getBytes());
+                out.write("\n".getBytes());
+                out.close();
+                Log.d(TAG, coords);
+            }
         } catch (IOException e) {
             Log.e("file writter", e.toString());
         }

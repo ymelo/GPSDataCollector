@@ -1,15 +1,12 @@
 package com.ymelo.gpsdatacollector.app;
 
 import android.app.Activity;
-
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,18 +19,18 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.ymelo.gpsdatacollector.app.utils.FileUtils;
+import com.ymelo.gpsdatacollector.app.utils.FragmentFix;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by yohann on 04/01/15.
  */
-public class MapFragment extends Fragment {
+public class MapFragment extends FragmentFix {
     public static final String TAG = "MapFragment";
     private GoogleMap mMap;
     private String dataFilename;
@@ -124,16 +121,12 @@ public class MapFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         FragmentManager manager = getChildFragmentManager();
-//        setUpMapIfNeeded((SupportMapFragment) manager.findFragmentByTag("map"));
-
-
-
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        ((MainActivity) activity).onSectionAttached("test p");
+        ((MainActivity) activity).onSectionAttached(activity.getString(R.string.fragment_title_map));
     }
 
     public List<LatLng> getMapData() throws IOException {
@@ -236,22 +229,6 @@ public class MapFragment extends Fragment {
 //            	map.setOnMyLocationButtonClickListener(this);
                 mapSetup();
             }
-        }
-    }
-    @Override
-    public void onDetach() {
-        super.onDetach();
-
-        try {
-            Field childFragmentManager = Fragment.class
-                    .getDeclaredField("mChildFragmentManager");
-            childFragmentManager.setAccessible(true);
-            childFragmentManager.set(this, null);
-
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
         }
     }
 

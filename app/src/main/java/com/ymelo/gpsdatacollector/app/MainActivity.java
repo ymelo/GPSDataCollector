@@ -50,9 +50,7 @@ public class MainActivity extends FragmentActivity
                 fr = getSupportFragmentManager().findFragmentByTag(tag);
                 if(fr == null) {
                     fr = new RecordFragment();
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.container, fr, tag)
-                            .commit();
+                    fr.setRetainInstance(true);
                 }
 
                 break;
@@ -61,9 +59,10 @@ public class MainActivity extends FragmentActivity
                 fr = getSupportFragmentManager().findFragmentByTag(tag);
                 if(fr == null) {
                     fr = new TripListFragment();
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.container, fr, tag)
-                            .commit();
+                    fr.setRetainInstance(true);
+//                    fragmentManager.beginTransaction()
+//                            .replace(R.id.container, fr, tag)
+//                            .commit();
                 }
 
                 break;
@@ -76,6 +75,9 @@ public class MainActivity extends FragmentActivity
 //
 //                break;
         }
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fr, tag)
+                .commit();
 
     }
 
@@ -125,9 +127,12 @@ public class MainActivity extends FragmentActivity
         fragment = (MapFragment) fragmentManager.findFragmentByTag(MapFragment.TAG);
         if(fragment == null) {
             fragment = MapFragment.newInstance(dataFilename);
+            fragment.setRetainInstance(true);
+        } else {
+
         }
-        fragmentManager.beginTransaction()
-                .add(R.id.container, fragment, MapFragment.TAG)
+        fragmentManager.beginTransaction().remove(fragment)
+                .replace(R.id.fragment_container, fragment, MapFragment.TAG)
                 .addToBackStack(null)
                 .commit();
     }
