@@ -68,5 +68,8 @@
     <string name="unknown_activity_request_code">
         Received an unknown activity request code %1$d in onActivityResult.
     </string>
+    <string name="fragment_title_map">Map</string>
+    <string name="start_recording">Start recording</string>
+    <string name="stop_recording">Stop recording</string>
 
 </resources>

@@ -68,10 +68,10 @@ public class MapFragment extends FragmentFix {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         FragmentManager fm = getChildFragmentManager();
-        mapFragment = (SupportMapFragment) fm.findFragmentById(R.id.map_container);
-        if (mapFragment == null) {
-            mapFragment = SupportMapFragment.newInstance();
-            fm.beginTransaction().replace(R.id.map_container, mapFragment).commit();
+        mMapFragment = (SupportMapFragment) fm.findFragmentByTag("googlemap");
+        if (mMapFragment == null) {
+            mMapFragment = SupportMapFragment.newInstance();
+            fm.beginTransaction().replace(R.id.container, mMapFragment, "googlemap").commit();
         }
 
     }
@@ -80,36 +80,10 @@ public class MapFragment extends FragmentFix {
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        setUpMapIfNeeded(mapFragment);
-        // Polylines are useful for marking paths and routes on the map.
-        try {
-            final List<LatLng> mapData = getMapData();
-            PolylineOptions po = new PolylineOptions();
-            po.color(getResources().getColor(R.color.polylineColor));
-            po.width(3.0f);
-            po.geodesic(true).addAll(mapData);
-            mMap.addPolyline(po);
-            mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
-                @Override
-                public void onMapLoaded() {
-                    LatLngBounds.Builder b = new LatLngBounds.Builder();
-                    for (LatLng point : mapData) {
-                        b.include(point);
-                    }
-                    LatLngBounds bounds = b.build();
-                    //Change the padding as per needed
-                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 30);
-                    mMap.animateCamera(cu);
-                }
-            });
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        setUpMapIfNeeded(mMapFragment);
     }
 
-    private SupportMapFragment mapFragment;
+    private SupportMapFragment mMapFragment;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -223,12 +197,42 @@ public class MapFragment extends FragmentFix {
             // Try to obtain the map from the SupportMapFragment.
 //            map = ((com.google.android.gms.maps.SupportMapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
             mMap = mapFragment.getMap();
-            // Check if we were successful in obtaining the map.
-            if (mMap != null) {
-                mMap.setMyLocationEnabled(true);
-//            	map.setOnMyLocationButtonClickListener(this);
-                mapSetup();
+            if(mMap != null) {
+                mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+                    @Override
+                    public void onMapLoaded() {
+                        // Polylines are useful for marking paths and routes on the map.
+                        try {
+                            final List<LatLng> mapData = getMapData();
+                            PolylineOptions po = new PolylineOptions();
+                            po.color(getResources().getColor(R.color.polylineColor));
+                            po.width(3.0f);
+                            po.geodesic(true).addAll(mapData);
+                            mMap.addPolyline(po);
+                            LatLngBounds.Builder b = new LatLngBounds.Builder();
+                            for (LatLng point : mapData) {
+                                b.include(point);
+                            }
+                            LatLngBounds bounds = b.build();
+                            //Change the padding as per needed
+                            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 30);
+                            mMap.animateCamera(cu);
+
+                        } catch (IOException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+
+
+                    }
+                });
             }
+
+
+        }
+        if (mMap != null) {
+            mMap.setMyLocationEnabled(true);
+            mapSetup();
         }
     }
 

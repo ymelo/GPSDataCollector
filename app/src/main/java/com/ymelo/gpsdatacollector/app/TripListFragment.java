@@ -2,8 +2,10 @@ package com.ymelo.gpsdatacollector.app;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -15,6 +17,12 @@ import java.lang.reflect.Field;
  * Created by yohann on 04/01/15.
  */
 public class TripListFragment extends ListFragment {
+
+    public interface OnItemClickedListener {
+        public void onFileClicked(String filePath);
+    }
+
+    public OnItemClickedListener listener;
     public static final String TAG = "TripListFragment";
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -46,7 +54,9 @@ public class TripListFragment extends ListFragment {
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        ((MainActivity) getActivity()).replaceMap((String) getListAdapter().getItem(position));
+        if(listener != null) {
+            listener.onFileClicked((String) getListAdapter().getItem(position));
+        }
     }
 
     @Override

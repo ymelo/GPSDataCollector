@@ -55,10 +55,10 @@ public class MainActivity extends FragmentActivity
 
                 break;
             case 0:
-                tag = TripListFragment.TAG;
+                tag = DisplayFragment.TAG;
                 fr = getSupportFragmentManager().findFragmentByTag(tag);
                 if(fr == null) {
-                    fr = new TripListFragment();
+                    fr = new DisplayFragment();
                     fr.setRetainInstance(true);
 //                    fragmentManager.beginTransaction()
 //                            .replace(R.id.container, fr, tag)
@@ -121,20 +121,11 @@ public class MainActivity extends FragmentActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public void replaceMap(String dataFilename) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        MapFragment fragment;
-        fragment = (MapFragment) fragmentManager.findFragmentByTag(MapFragment.TAG);
-        if(fragment == null) {
-            fragment = MapFragment.newInstance(dataFilename);
-            fragment.setRetainInstance(true);
-        } else {
-
+    public void onBackPressed() {
+        if (!getSupportFragmentManager().popBackStackImmediate()) {
+            finish();
         }
-        fragmentManager.beginTransaction().remove(fragment)
-                .replace(R.id.fragment_container, fragment, MapFragment.TAG)
-                .addToBackStack(null)
-                .commit();
     }
+
 
 }
