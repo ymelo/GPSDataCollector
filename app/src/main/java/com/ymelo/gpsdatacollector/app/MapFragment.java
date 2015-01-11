@@ -67,7 +67,7 @@ public class MapFragment extends FragmentFix {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        FragmentManager fm = getChildFragmentManager();
+        FragmentManager fm = getFragmentManager();
         mMapFragment = (SupportMapFragment) fm.findFragmentByTag("googlemap");
         if (mMapFragment == null) {
             mMapFragment = SupportMapFragment.newInstance();
@@ -94,7 +94,7 @@ public class MapFragment extends FragmentFix {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        FragmentManager manager = getChildFragmentManager();
+        FragmentManager manager = getFragmentManager();
     }
 
     @Override
