@@ -7,11 +7,12 @@ import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.ymelo.gpsdatacollector.app.utils.FragmentFix;
 
 /**
  * Created by yohann on 10/01/15.
  */
-public class DisplayFragment extends Fragment implements TripListFragment.OnItemClickedListener{
+public class DisplayFragment extends FragmentFix implements TripListFragment.OnItemClickedListener{
 
     public static final String TAG = "DisplayFragment";
 
@@ -30,8 +31,8 @@ public class DisplayFragment extends Fragment implements TripListFragment.OnItem
                 fr = new TripListFragment();
                 ((TripListFragment)fr).listener = this;
                 fr.setRetainInstance(true);
-                manager.beginTransaction().add(R.id.container, fr, TripListFragment.TAG).commit();
             }
+            manager.beginTransaction().add(R.id.container, fr, TripListFragment.TAG).commit();
         }
         return rootView;
     }
@@ -49,18 +50,28 @@ public class DisplayFragment extends Fragment implements TripListFragment.OnItem
         if(fragment == null) {
             fragment = MapFragment.newInstance(dataFilename);
             fragment.setRetainInstance(true);
+            fragmentManager.beginTransaction().add(R.id.container, fragment, MapFragment.TAG)
+                    .addToBackStack(null)
+                    .commit();
         } else {
 
         }
-        fragmentManager.beginTransaction().remove(fragment)
-                .add(R.id.container, fragment, MapFragment.TAG)
-                .addToBackStack(null)
-                .commit();
-        fragment = (MapFragment) fragmentManager.findFragmentByTag(MapFragment.TAG);
+
+
     }
 
     @Override
     public void onFileClicked(String filePath) {
         replaceMap(filePath);
     }
+
+//    @Override
+//    public void onDetach() {
+//        super.onDetach();
+//        FragmentManager manager = getFragmentManager();
+//        Fragment fr = manager.findFragmentByTag(TripListFragment.TAG);
+//        if(fr == null) {
+//            manager.beginTransaction().remove(fr).commit();
+//        }
+//    }
 }

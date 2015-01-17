@@ -67,7 +67,7 @@ public class MapFragment extends FragmentFix {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getChildFragmentManager();
         mMapFragment = (SupportMapFragment) fm.findFragmentByTag("googlemap");
         if (mMapFragment == null) {
             mMapFragment = SupportMapFragment.newInstance();
@@ -88,6 +88,7 @@ public class MapFragment extends FragmentFix {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
+        rootView.setBackgroundColor(getResources().getColor(android.R.color.black));
         return rootView;
     }
 

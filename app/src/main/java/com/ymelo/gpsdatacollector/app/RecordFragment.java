@@ -87,7 +87,9 @@ public class RecordFragment extends FragmentFix implements LocationListener,
                 if(mIsRecording) {
                     mStartStopRecording.setText(getString(R.string.stop_recording));
                     mRecording.setVisibility(View.VISIBLE);
+                    startUpdates(null);
                 } else {
+                    stopUpdates(null);
                     mStartStopRecording.setText(getString(R.string.start_recording));
                     mRecording.setVisibility(View.GONE);
                 }

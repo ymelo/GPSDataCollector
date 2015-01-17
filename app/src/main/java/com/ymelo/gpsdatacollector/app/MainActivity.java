@@ -51,6 +51,9 @@ public class MainActivity extends FragmentActivity
                 if(fr == null) {
                     fr = new RecordFragment();
                     fr.setRetainInstance(true);
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.fragment_container, fr, tag)
+                            .commit();
                 }
 
                 break;
@@ -60,9 +63,9 @@ public class MainActivity extends FragmentActivity
                 if(fr == null) {
                     fr = new DisplayFragment();
                     fr.setRetainInstance(true);
-//                    fragmentManager.beginTransaction()
-//                            .replace(R.id.container, fr, tag)
-//                            .commit();
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.fragment_container, fr, tag)
+                            .commit();
                 }
 
                 break;
@@ -75,9 +78,7 @@ public class MainActivity extends FragmentActivity
 //
 //                break;
         }
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fr, tag)
-                .commit();
+
 
     }
 
