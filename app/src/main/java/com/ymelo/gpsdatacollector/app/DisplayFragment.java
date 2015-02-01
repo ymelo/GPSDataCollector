@@ -31,9 +31,9 @@ public class DisplayFragment extends FragmentFix implements TripListFragment.OnI
                 fr = new TripListFragment();
                 ((TripListFragment)fr).listener = this;
                 fr.setRetainInstance(true);
-                manager.beginTransaction().add(R.id.container, fr, TripListFragment.TAG).commit();
-            }
 
+            }
+            manager.beginTransaction().add(R.id.container, fr, TripListFragment.TAG).commit();
         }
         return rootView;
     }

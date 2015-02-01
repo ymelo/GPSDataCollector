@@ -11,6 +11,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -32,6 +35,7 @@ import java.util.List;
  */
 public class MapFragment extends FragmentFix {
     public static final String TAG = "MapFragment";
+    private SupportMapFragment mMapFragment;
     private GoogleMap mMap;
     private String dataFilename;
 
@@ -40,6 +44,12 @@ public class MapFragment extends FragmentFix {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
+    /**
+     * mNeedAnimateCamera
+     * If set to true, the map will be recentered on the trip
+     * on the next call to fillMapData
+     */
+    private boolean mNeedAnimateCamera = true;
 
     /**
      * Returns a new instance of this fragment for the given section
@@ -62,40 +72,42 @@ public class MapFragment extends FragmentFix {
         super.onCreate(savedInstanceState);
         Bundle bundle = getArguments();
         dataFilename = bundle.getString(ARG_SECTION_NUMBER);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        FragmentManager fm = getChildFragmentManager();
-        mMapFragment = (SupportMapFragment) fm.findFragmentByTag("googlemap");
-        if (mMapFragment == null) {
-            mMapFragment = SupportMapFragment.newInstance();
-            fm.beginTransaction().replace(R.id.container, mMapFragment, "googlemap").commit();
-        }
 
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume");
-        setUpMapIfNeeded(mMapFragment);
-    }
-
-    private SupportMapFragment mMapFragment;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
         rootView.setBackgroundColor(getResources().getColor(android.R.color.black));
+        if(savedInstanceState != null) {
+            //After config change etc, simply reset the map to
+            //show the whole trip
+            mNeedAnimateCamera = true;
+        }
+        FragmentManager fm = getChildFragmentManager();
+        mMapFragment = (SupportMapFragment) fm.findFragmentByTag("googlemap");
+        if (mMapFragment == null) {
+            mMapFragment = SupportMapFragment.newInstance();
+            fm.beginTransaction().replace(R.id.container, mMapFragment, "googlemap").commit();
+            mMapFragment.setRetainInstance(true);
+        }
         return rootView;
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        FragmentManager manager = getFragmentManager();
+        FrameLayout mapLayout = (FrameLayout) getView().findViewById(R.id.container);
+        /*
+        It is only possible to centre the map on the trip after it has been layed out.
+         */
+        mapLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                fillMapData();
+            }
+        });
     }
 
     @Override
@@ -164,76 +176,46 @@ public class MapFragment extends FragmentFix {
         } else {
             mMap.getUiSettings().setZoomControlsEnabled(true);
         }
-        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-
-        Location lastNetworkLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
-        if(lastNetworkLocation != null) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1){
-                Location lastGPSLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                if(lastGPSLocation != null) {
-                    if(lastGPSLocation.getElapsedRealtimeNanos() > lastNetworkLocation.getElapsedRealtimeNanos()) {
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                new LatLng(lastNetworkLocation.getLatitude(), lastNetworkLocation.getLongitude()), 14));
-                    } else {
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                new LatLng(lastGPSLocation.getLatitude(), lastGPSLocation.getLongitude()), 14));
-                    }
-                } else {
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(lastNetworkLocation.getLatitude(), lastNetworkLocation.getLongitude()), 14));
-                }
-            } else {
-                //No simple way to compare the two different location time
-                //So go for the assumption that the network location should be used
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                        new LatLng(lastNetworkLocation.getLatitude(), lastNetworkLocation.getLongitude()), 14));
-            }
-        }
     }
     private void setUpMapIfNeeded(SupportMapFragment mapFragment) {
-
+        mMap = null;
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
 //            map = ((com.google.android.gms.maps.SupportMapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
             mMap = mapFragment.getMap();
-            if(mMap != null) {
-                mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
-                    @Override
-                    public void onMapLoaded() {
-                        // Polylines are useful for marking paths and routes on the map.
-                        try {
-                            final List<LatLng> mapData = getMapData();
-                            PolylineOptions po = new PolylineOptions();
-                            po.color(getResources().getColor(R.color.polylineColor));
-                            po.width(3.0f);
-                            po.geodesic(true).addAll(mapData);
-                            mMap.addPolyline(po);
-                            LatLngBounds.Builder b = new LatLngBounds.Builder();
-                            for (LatLng point : mapData) {
-                                b.include(point);
-                            }
-                            LatLngBounds bounds = b.build();
-                            //Change the padding as per needed
-                            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 30);
-                            mMap.animateCamera(cu);
-
-                        } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-
-
-                    }
-                });
-            }
-
-
         }
         if (mMap != null) {
             mMap.setMyLocationEnabled(true);
             mapSetup();
+        }
+    }
+
+    private void fillMapData() {
+        setUpMapIfNeeded(mMapFragment);
+        if(mNeedAnimateCamera) {
+            mNeedAnimateCamera = false;
+            // Polylines are useful for marking paths and routes on the map.
+            try {
+                final List<LatLng> mapData = getMapData();
+                PolylineOptions po = new PolylineOptions();
+                po.color(getResources().getColor(R.color.polylineColor));
+                po.width(3.0f);
+                po.geodesic(true).addAll(mapData);
+                mMap.addPolyline(po);
+                LatLngBounds.Builder b = new LatLngBounds.Builder();
+                for (LatLng point : mapData) {
+                    b.include(point);
+                }
+                LatLngBounds bounds = b.build();
+                //Change the padding as per needed
+                CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 30);
+                mMap.animateCamera(cu);
+
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
 

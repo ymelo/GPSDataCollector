@@ -5,14 +5,20 @@ import android.os.Bundle;
 import android.support.v4.app.*;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
+
+import java.util.Locale;
+
+import static java.util.Locale.*;
 
 
 public class MainActivity extends FragmentActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
+    private ViewPager mViewPager;
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -27,7 +33,8 @@ public class MainActivity extends FragmentActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mViewPager = (ViewPager) findViewById(R.id.view_pager);
+        mViewPager.setAdapter(new SectionsPagerAdapter(getSupportFragmentManager()));
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
@@ -38,37 +45,47 @@ public class MainActivity extends FragmentActivity
                 (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
-    @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        // update the main content by replacing fragments
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment fr = null;
-        String tag = null;
-        switch (position) {
-            case 1:
-                tag = RecordFragment.TAG;
-                fr = getSupportFragmentManager().findFragmentByTag(tag);
-                if(fr == null) {
-                    fr = new RecordFragment();
-                    fr.setRetainInstance(true);
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.fragment_container, fr, tag)
-                            .commit();
-                }
 
-                break;
-            case 0:
-                tag = DisplayFragment.TAG;
-                fr = getSupportFragmentManager().findFragmentByTag(tag);
-                if(fr == null) {
-                    fr = new DisplayFragment();
-                    fr.setRetainInstance(true);
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.fragment_container, fr, tag)
-                            .commit();
-                }
+    /**
+     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
+     * one of the sections/tabs/pages.
+     */
+    public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-                break;
+        public SectionsPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            Fragment fr = null;
+            String tag = null;
+            switch (position) {
+                case 1:
+                    tag = RecordFragment.TAG;
+                    fr = fragmentManager.findFragmentByTag(tag);
+                    if(fr == null) {
+                        fr = new RecordFragment();
+                        fr.setRetainInstance(true);
+//                        fragmentManager.beginTransaction()
+//                                .add(R.id.fragment_container, fr, tag)
+//                                .commit();
+                    }
+
+                    break;
+                case 0:
+                    tag = DisplayFragment.TAG;
+                    fr = fragmentManager.findFragmentByTag(tag);
+                    if(fr == null) {
+                        fr = new DisplayFragment();
+                        fr.setRetainInstance(true);
+//                        fragmentManager.beginTransaction()
+//                                .add(R.id.fragment_container, fr, tag)
+//                                .commit();
+                    }
+
+                    break;
 //            default:
 //                tag = MapFragment.TAG;
 //                fr = getFragmentManager().findFragmentByTag(tag);
@@ -77,9 +94,37 @@ public class MainActivity extends FragmentActivity
 //                }
 //
 //                break;
+            }
+            return fr;
         }
 
+        @Override
+        public int getCount() {
+            // Show 3 total pages.
+            return 2;
+        }
 
+        @Override
+        public CharSequence getPageTitle(int position) {
+            Locale l = getDefault();
+            switch (position) {
+                case 0:
+                    return getString(R.string.title_section1).toUpperCase(l);
+                case 1:
+                    return getString(R.string.title_section2).toUpperCase(l);
+                case 2:
+                    return getString(R.string.title_section3).toUpperCase(l);
+            }
+            return null;
+        }
+    }
+
+    @Override
+    public void onNavigationDrawerItemSelected(int position) {
+        // update the main content by replacing fragments
+        if(mViewPager != null) {
+            mViewPager.setCurrentItem(position);
+        }
     }
 
     public void onSectionAttached(String title) {

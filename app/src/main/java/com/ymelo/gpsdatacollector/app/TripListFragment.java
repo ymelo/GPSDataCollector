@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import com.ymelo.gpsdatacollector.app.utils.FileUtils;
+import com.ymelo.gpsdatacollector.app.utils.FragmentFix;
+
 import java.io.File;
 import java.lang.reflect.Field;
 
@@ -17,6 +19,12 @@ import java.lang.reflect.Field;
  * Created by yohann on 04/01/15.
  */
 public class TripListFragment extends ListFragment {
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(FragmentFix.LIFECYCLE_TAG, "onCreate " + TripListFragment.class.getSimpleName());
+    }
 
     public interface OnItemClickedListener {
         public void onFileClicked(String filePath);
@@ -33,7 +41,7 @@ public class TripListFragment extends ListFragment {
     @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume");
+        Log.d(FragmentFix.LIFECYCLE_TAG, "onResume for " + TripListFragment.class.getSimpleName());
     }
 
     @Override
